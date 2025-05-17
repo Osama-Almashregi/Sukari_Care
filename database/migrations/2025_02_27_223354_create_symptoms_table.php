@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('symptoms', function (Blueprint $table) {
+        Schema::create('symptom', function (Blueprint $table) {
             $table->id('id');
             $table->unsignedBigInteger('patient_id');
             $table->string('symptom_description')->nullable();
-            $table->enum('severity', ['mild', 'moderate', 'severe'])->nullable();
+            $table->string('severity')->nullable();
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
             // $table->string('duration')->nullable();
             $table->timestamps();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('symptoms');
+        Schema::dropIfExists('symptom');
     }
 };

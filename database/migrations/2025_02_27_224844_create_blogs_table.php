@@ -15,8 +15,8 @@ return new class extends Migration
         $table->id('blog_id');
         $table->unsignedBigInteger('author_id');
         $table->string('title');
-        $table->string('slug');
         $table->text('content');
+        $table->boolean('is_educational')->default(true)->nullable();
         $table->foreign('author_id')->references('id')->on('users')->onDelete('cascade'); // تأكد من استخدام cascade هنا
         $table->string('image_url')->nullable();
         $table->timestamps();

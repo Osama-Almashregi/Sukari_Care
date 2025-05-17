@@ -11,19 +11,10 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
 // class User extends Authenticatable  implements MustVerifyEmail
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable 
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasApiTokens;
-     public function canAccessPanel(Panel $panel): bool
-    {
-          if($this->role === 'admin'){
-            return true;
-        }
-        else{
-            return true;
-        }
-    }
+    use HasFactory, Notifiable, HasApiTokens;
     /**
      * The attributes that are mass assignable.
      *
@@ -56,7 +47,7 @@ class User extends Authenticatable implements FilamentUser
     protected function casts(): array
     {
         return [
-            'mobile_last_attempt_date'=> 'datetime',
+            'mobile_last_attempt_date' => 'datetime',
             'mobile_verify_code_send_at' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
@@ -67,21 +58,25 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasOne(doctor::class);
     }
-    public function profile(){
-        return $this->hasOne(user_profile::class,'user_id');
-
+    public function profile()
+    {
+        return $this->hasOne(user_profile::class, 'user_id');
     }
-    public function blog(){
-        return $this->hasMany(blog::class,'author_id');
+    public function blog()
+    {
+        return $this->hasMany(blog::class, 'author_id');
     }
-    public function comment(){
+    public function comment()
+    {
         return $this->hasMany(blog_comment::class);
     }
 
-    public function patient(){
+    public function patient()
+    {
         return $this->hasOne(patient::class);
     }
-    public function relative(){
+    public function relative()
+    {
         return $this->hasOne(relative::class);
     }
 }

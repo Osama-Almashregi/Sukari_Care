@@ -17,5 +17,9 @@ class doctor extends Model
     public function profile(){
         return $this->hasOne(user_profile::class,'user_id');
     }
+     public function patients()
+    {
+        return $this->hasMany(Patient::class, 'id');
+    }
     
 }

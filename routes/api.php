@@ -58,7 +58,7 @@ Route::group(['middleware' => 'auth:sanctum'],function () {
     Route::post('/updateDoctorProfile',[DoctorController::class,'update_Doctor_profile'])->name('updateDoctorProfile');
     Route::post('/addPatient',[DoctorController::class,'add_patient'])->name('addPatient');
     Route::get('/doctor_blogs',[DoctorController::class,'show_doctor_blogs'])->name('doctor_blogs');
-    Route::post('/add_blog',[DoctorController::class,'add_blog'])->name('add_blog');
+    Route::post('/add_blog',[DoctorController::class,'add_blog']);
     Route::get('/show_blog',[DoctorController::class,'show_blog'])->name('show_blog');
     Route::post('/add_favorite',[DoctorController::class,'add_favorite']);
     Route::post('/get_favorites',[DoctorController::class,'get_favorites']);
@@ -67,7 +67,7 @@ Route::group(['middleware' => 'auth:sanctum'],function () {
     Route::get('/get_comments',[DoctorController::class,'get_comments_of_blog'])->name('get_comments');
     Route::post('/add_drug_recommendation',[DoctorController::class,'add_drug_recommendation'])->name('add_drug_recommendation');
     Route::post('/add_exercise_recommendation',[DoctorController::class,'add_exercise_recommendation'])->name('add_exercise_recommendation');
-    Route::post('/add_comment',[DoctorController::class,'add_comment'])->name('add_comment');
+    Route::post('/add_comment',[DoctorController::class,'add_comment']);
     Route::delete('/delete_comment',[DoctorController::class,'delete_comment'])->name('delete_comment');
     Route::post('/edit_blog',[DoctorController::class,'edit_blog'])->name('edit_blog');
     Route::delete('/delete_blog',[DoctorController::class,'delete_blog'])->name('delete_blog');
@@ -83,9 +83,11 @@ Route::group(['middleware' => 'auth:sanctum'],function () {
     Route::get('/get_statistics',[PatientController::class,'get_statistics']);
     Route::post('/Add_glucose_reading',[PatientController::class,'Add_glucose_reading']);
     Route::post('/add_alarm',[PatientController::class,'add_alarm']);
+    Route::post('/add_p',[DoctorController::class,'add_p']);
     Route::get('/get_alarms',[PatientController::class,'get_alarms']);
     Route::delete('/delete_alarm',[PatientController::class,'delete_alarm']);
     Route::get('/getNotifications',[PatientController::class,'getNotifications']);
+
 });
 // Route::post('/edit_comment',[DoctorController::class,'edit_comment'])->name('edit_comment');
 // Route::get('/getDoctor',[DoctorController::class,'getDoctor'])->name('getDoctor');

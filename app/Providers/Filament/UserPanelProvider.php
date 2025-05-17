@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Providers\Filament;
+use App\Http\Middleware\RedirectToProperPanelMiddleware;
 
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -54,6 +55,7 @@ class UserPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
+                // RedirectToProperPanelMiddleware::class,
                 Authenticate::class,
             ]);
     }

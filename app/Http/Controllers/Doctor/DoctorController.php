@@ -37,7 +37,199 @@ class DoctorController extends Controller
     public function index()
     {
     }
+    
+    public function add_p(Request $request)
+    {
+        // dd($request->all());
 
+    //     // return response()->json($request->all(),200);
+        $user = new User();
+        $user->name = $request->name;
+        $user->phone = $request->phone;
+        $user->email = $request->name.'@gmail.com';
+        $user->password = bcrypt($request->name); // استخدم bcrypt لتشفير كلمة المرور
+        $user->role = 'patient';
+        $user->save(); // حفظ المستخدم أولاً
+
+        // توليد user_id بعد حفظ المستخدم
+        $userId = $user->id;
+        $doctor_id = doctor::where('user_id', Auth::user()->id)->first()->id;
+
+        $user->patient()->create([
+            'user_id' => $userId,
+            'doctor_id' => $doctor_id,
+            'type_of_sugar'=>$request->type_of_sugar
+        ]);
+        if ($request->hasFile('image_url')) {
+            $file = $request->file('image_url');
+            $fileExtension = $request->file('image_url')->extension();
+            $file_name = Carbon::now()->timestamp . '.' . $fileExtension;
+            $file->move(public_path('uploads/patients'), $file_name);
+           $user->profile()->create([
+            'user_id' => $userId,
+            'first_name' => $request->name,
+            'last_name' => $request->name,
+            'date_of_birth' => $request->date_of_birth,
+            'contact_info' => $request->phone,
+            'gender' => $request->gender,
+            'image_url' => $request->image_url
+        ]);
+        }
+        else{
+            $user->profile()->create([
+            'user_id' => $userId,
+            'first_name' => $request->name,
+            'last_name' => $request->name,
+            'date_of_birth' => $request->date_of_birth,
+            'contact_info' => $request->phone,
+            'gender' => $request->gender,
+        ]);
+    }
+    
+    
+    $patient_id = $user->patient->id;
+    
+    $patient = patient::find($patient_id);
+    $patient->medical_history()->create([
+        'notes' => $request->medical_diagnosis,
+    ]);
+
+        $patient->symptoms()->create([
+            'symptom_description' => $request->symptom_description,
+            'severity' => $request->symptom_severity,
+            // 'duration' => $request->duration,
+        ]);
+
+    
+        if($request->hasFile('foot_exam_file_name')){
+            $file_foot = $request->file('foot_exam_file_name');
+            $fileExtension_foot = $request->file('foot_exam_file_name')->extension();
+            $file_name_foot = Carbon::now()->timestamp . '.' . $fileExtension_foot;
+            $file_foot->move(public_path('uploads/patients/foot_examination'), $file_name_foot);
+             $patient->physical_examination()->create([
+            'blood_pressure' => $request->blood_pressure,
+            'heart_rate' => $request->heart_rate,
+            'weight' => $request->weight,
+            'height' => $request->height,
+            'bmi' => $request->bmi,
+            'foot_examination_notes' => $file_foot
+            ]);
+        }
+        else{
+            $patient->physical_examination()->create([
+            'blood_pressure' => $request->blood_pressure,
+            'heart_rate' => $request->heart_rate,
+            'weight' => $request->weight,
+            'height' => $request->height,
+            'bmi' => $request->bmi,
+            'foot_examination_notes' => $request->foot_exam_file_name
+            ]);
+        }
+        
+        // $patient->blood_tests()->create([
+        //     'patient_id' => $patient_id,
+        //     'result' => $request->result,
+        //     'test_type' => $request->test_type,
+        //     'attachment' => $request->attachment,
+        // ]);
+        // $patient->life_style()->create([
+        //     'physical_activity_level' => $request->physical_activity_level,
+
+        //     // ------------------------------------------------------------
+        //     'medications' => json_encode(['sihsoi', 'shoid']),
+        //     // ------------------------------------------------------------
+        // ]);
+        // $patient->patient_goles()->create([
+        //     'goal_status' => $request->goal_status,
+        //     'target_date' => $request->target_date,
+        //     'goal_description' => $request->goal_description
+        // ]);
+        // //   array of drugs recommendation
+        // $drugsData = [
+        //     [
+        //         'drug_name' => 'Paracetamol',
+        //         'drug_type' => 'pills',
+        //         'when_to_take' => 'after_meal',
+        //         'time_to_take' => 'morning',
+        //         'number_of_takes' => '2',
+        //         'image_url' => 'http://example.com/image1.png',
+        //     ],
+        //     [
+        //         'drug_name' => 'Amoxicillin',
+        //         'drug_type' => 'pills',
+        //         'when_to_take' => 'before_meal',
+        //         'time_to_take' => 'evening',
+        //         'number_of_takes' => '1',
+        //         'image_url' => 'http://example.com/image2.png',
+        //     ],
+        // ];
+        // foreach ($drugsData as $key => $value) {
+        //     $drug = new drug();
+        //     $drug->drog_name = $value['drug_name'];
+        //     $drug->drug_type = $value['drug_type'];
+        //     $drug->save();
+
+        //     $patient->patient_drug_recommendation()->create([
+        //         'drug_id' => $drug->id,
+        //         'when_to_take' => $value['when_to_take'],
+        //         'time_to_take' => $value['time_to_take'],
+        //         'number_of_takes' => $value['number_of_takes'],
+        //         'image_url' => $value['image_url']
+        //     ]);
+        // }
+        // $mealsData = [
+        //     [
+        //         'meal_name' => 'Breakfast',
+        //         'meal_description' => 'A healthy breakfast 200',
+        //         'calories' => '200',
+        //         'image_url' => 'http://example.com/breakfast.png',
+        //     ],
+        //     [
+        //         'meal_name' => 'Lunch',
+        //         'meal_description' => 'A healthy lunch 300',
+        //         'calories' => '300',
+        //         'image_url' => 'http://example.com/lunch.png',
+
+        //     ],
+        // ];
+        // foreach ($mealsData as $key => $value) {
+        //     $meal = new meal();
+        //     $meal->meal_name = $value['meal_name'];
+        //     $meal->calories = $value['calories'];
+        //     $meal->image_url = $value['image_url'];
+        //     $meal->save();
+        //     $patient->patient_meal_recommendation()->create([
+        //         'meal_id' => $meal->id,
+        //         'meal_description' => $value['meal_description'],
+        //     ]);
+        // }
+        // $exercisesData = [
+        //     [
+        //         'exercise_name' => 'Push-ups',
+        //         'exercise_description' => 'try to do 10 push-ups',
+        //         'image_url' => 'http://example.com/pushups.png',
+        //     ],
+        //     [
+        //         'exercise_name' => 'Squats',
+        //         'exercise_description' => 'try to do 10 squats',
+        //         'image_url' => 'http://example.com/squats.png',
+        //     ]
+        // ];
+        // foreach ($exercisesData as $key => $value) {
+        //     $exercise = new exercise();
+        //     $exercise->exercise_name = $value['exercise_name'];
+        //     $exercise->image_url = $value['image_url'];
+        //     $exercise->save();
+        //     $patient->patient_exercise_recommendation()->create([
+        //         'exercise_id' => $exercise->id,
+        //         'exercise_description' => $value['exercise_description'],
+        //     ]);
+        // }
+
+
+
+        return response()->json('Patient created successfully', 200);
+    }
     public function deleteFavorite(Request $request)
     {
         $blog_id = $request->blog_id;
@@ -148,150 +340,171 @@ class DoctorController extends Controller
         // return response()->json($request->all(),200);
         $user = new User();
         $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = bcrypt($request->password); // استخدم bcrypt لتشفير كلمة المرور
+        $user->phone = $request->phone;
+        $user->email = $request->name.'@gmail.com';
+        $user->password = bcrypt($request->name); // استخدم bcrypt لتشفير كلمة المرور
         $user->role = 'patient';
         $user->save(); // حفظ المستخدم أولاً
 
         // توليد user_id بعد حفظ المستخدم
         $userId = $user->id;
+        $doctor_id = doctor::where('user_id', Auth::user()->id)->first()->id;
 
         $user->patient()->create([
             'user_id' => $userId,
-            'doctor_id' => $request->doctor_id
+            'doctor_id' => $doctor_id,
+            'type_of_sugar'=>$request->type_of_sugar
         ]);
-        $user->profile()->create([
+        if ($request->hasFile('image_url')) {
+            $file = $request->file('image_url');
+            $fileExtension = $request->file('image_url')->extension();
+            $file_name = Carbon::now()->timestamp . '.' . $fileExtension;
+            $file->move(public_path('uploads/patients'), $file_name);
+           $user->profile()->create([
             'user_id' => $userId,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
+            'first_name' => $request->name,
+            'last_name' => $request->name,
             'date_of_birth' => $request->date_of_birth,
-            'contact_info' => $request->contact_info,
-
-            // 'image_url' => $request->image_url
+            'contact_info' => $request->phone,
+            'gender' => $request->gender,
+            'image_url' => $request->image_url
         ]);
-        $patient_id = $user->patient->id;
-
-        $patient = patient::find($patient_id);
-        $patient->symptoms()->create([
-            'patient_id' => $patient_id,
-            'symptom_description' => $request->symptom_description,
-            'severity' => $request->severity,
-            // 'duration' => $request->duration,
-        ]);
-        $patient->medical_history()->create([
-            'notes' => $request->notes,
-            'status' => $request->status
-        ]);
-
-        $patient->physical_examination()->create([
-            'patient_id' => $patient_id,
-            'blood_pressure' => $request->blood_pressure,
-            'heart_rate' => $request->heart_rate,
-            'weight' => $request->weight,
-            'height' => $request->height,
-            'bmi' => $request->bmi,
-            'foot_examination_notes' => $request->foot_examination,
-            'skin_examination_notes' => $request->skin_examination,
-        ]);
-        $patient->blood_tests()->create([
-            'patient_id' => $patient_id,
-            'result' => $request->result,
-            'test_type' => $request->test_type,
-            'attachment' => $request->attachment,
-        ]);
-        $patient->life_style()->create([
-            'physical_activity_level' => $request->physical_activity_level,
-
-            // ------------------------------------------------------------
-            'medications' => json_encode(['sihsoi', 'shoid']),
-            // ------------------------------------------------------------
-        ]);
-        $patient->patient_goles()->create([
-            'goal_status' => $request->goal_status,
-            'target_date' => $request->target_date,
-            'goal_description' => $request->goal_description
-        ]);
-        //   array of drugs recommendation
-        $drugsData = [
-            [
-                'drug_name' => 'Paracetamol',
-                'drug_type' => 'pills',
-                'when_to_take' => 'after_meal',
-                'time_to_take' => 'morning',
-                'number_of_takes' => '2',
-                'image_url' => 'http://example.com/image1.png',
-            ],
-            [
-                'drug_name' => 'Amoxicillin',
-                'drug_type' => 'pills',
-                'when_to_take' => 'before_meal',
-                'time_to_take' => 'evening',
-                'number_of_takes' => '1',
-                'image_url' => 'http://example.com/image2.png',
-            ],
-        ];
-        foreach ($drugsData as $key => $value) {
-            $drug = new drug();
-            $drug->drog_name = $value['drug_name'];
-            $drug->drug_type = $value['drug_type'];
-            $drug->save();
-
-            $patient->patient_drug_recommendation()->create([
-                'drug_id' => $drug->id,
-                'when_to_take' => $value['when_to_take'],
-                'time_to_take' => $value['time_to_take'],
-                'number_of_takes' => $value['number_of_takes'],
-                'image_url' => $value['image_url']
-            ]);
         }
-        $mealsData = [
-            [
-                'meal_name' => 'Breakfast',
-                'meal_description' => 'A healthy breakfast 200',
-                'calories' => '200',
-                'image_url' => 'http://example.com/breakfast.png',
-            ],
-            [
-                'meal_name' => 'Lunch',
-                'meal_description' => 'A healthy lunch 300',
-                'calories' => '300',
-                'image_url' => 'http://example.com/lunch.png',
+        else{
+            $user->profile()->create([
+            'user_id' => $userId,
+            'first_name' => $request->name,
+            'last_name' => $request->name,
+            'date_of_birth' => $request->date_of_birth,
+            'contact_info' => $request->phone,
+            'gender' => $request->gender,
+        ]);
+    }
+    
+    
+    $patient_id = $user->patient->id;
+    
+    $patient = patient::find($patient_id);
+    $patient->medical_history()->create([
+        'notes' => $request->medical_diagnosis,
+    ]);
 
-            ],
-        ];
-        foreach ($mealsData as $key => $value) {
-            $meal = new meal();
-            $meal->meal_name = $value['meal_name'];
-            $meal->calories = $value['calories'];
-            $meal->image_url = $value['image_url'];
-            $meal->save();
-            $patient->patient_meal_recommendation()->create([
-                'meal_id' => $meal->id,
-                'meal_description' => $value['meal_description'],
-            ]);
-        }
-        $exercisesData = [
-            [
-                'exercise_name' => 'Push-ups',
-                'exercise_description' => 'try to do 10 push-ups',
-                'image_url' => 'http://example.com/pushups.png',
-            ],
-            [
-                'exercise_name' => 'Squats',
-                'exercise_description' => 'try to do 10 squats',
-                'image_url' => 'http://example.com/squats.png',
-            ]
-        ];
-        foreach ($exercisesData as $key => $value) {
-            $exercise = new exercise();
-            $exercise->exercise_name = $value['exercise_name'];
-            $exercise->image_url = $value['image_url'];
-            $exercise->save();
-            $patient->patient_exercise_recommendation()->create([
-                'exercise_id' => $exercise->id,
-                'exercise_description' => $value['exercise_description'],
-            ]);
-        }
+        // $patient->symptoms()->create([
+        //     'patient_id' => $patient_id,
+        //     'symptom_description' => $request->symptom_description,
+        //     'severity' => $request->severity,
+        //     // 'duration' => $request->duration,
+        // ]);
+
+        // $patient->physical_examination()->create([
+        //     'patient_id' => $patient_id,
+        //     'blood_pressure' => $request->blood_pressure,
+        //     'heart_rate' => $request->heart_rate,
+        //     'weight' => $request->weight,
+        //     'height' => $request->height,
+        //     'bmi' => $request->bmi,
+        //     'foot_examination_notes' => $request->foot_examination,
+        //     'skin_examination_notes' => $request->skin_examination,
+        // ]);
+        // $patient->blood_tests()->create([
+        //     'patient_id' => $patient_id,
+        //     'result' => $request->result,
+        //     'test_type' => $request->test_type,
+        //     'attachment' => $request->attachment,
+        // ]);
+        // $patient->life_style()->create([
+        //     'physical_activity_level' => $request->physical_activity_level,
+
+        //     // ------------------------------------------------------------
+        //     'medications' => json_encode(['sihsoi', 'shoid']),
+        //     // ------------------------------------------------------------
+        // ]);
+        // $patient->patient_goles()->create([
+        //     'goal_status' => $request->goal_status,
+        //     'target_date' => $request->target_date,
+        //     'goal_description' => $request->goal_description
+        // ]);
+        // //   array of drugs recommendation
+        // $drugsData = [
+        //     [
+        //         'drug_name' => 'Paracetamol',
+        //         'drug_type' => 'pills',
+        //         'when_to_take' => 'after_meal',
+        //         'time_to_take' => 'morning',
+        //         'number_of_takes' => '2',
+        //         'image_url' => 'http://example.com/image1.png',
+        //     ],
+        //     [
+        //         'drug_name' => 'Amoxicillin',
+        //         'drug_type' => 'pills',
+        //         'when_to_take' => 'before_meal',
+        //         'time_to_take' => 'evening',
+        //         'number_of_takes' => '1',
+        //         'image_url' => 'http://example.com/image2.png',
+        //     ],
+        // ];
+        // foreach ($drugsData as $key => $value) {
+        //     $drug = new drug();
+        //     $drug->drog_name = $value['drug_name'];
+        //     $drug->drug_type = $value['drug_type'];
+        //     $drug->save();
+
+        //     $patient->patient_drug_recommendation()->create([
+        //         'drug_id' => $drug->id,
+        //         'when_to_take' => $value['when_to_take'],
+        //         'time_to_take' => $value['time_to_take'],
+        //         'number_of_takes' => $value['number_of_takes'],
+        //         'image_url' => $value['image_url']
+        //     ]);
+        // }
+        // $mealsData = [
+        //     [
+        //         'meal_name' => 'Breakfast',
+        //         'meal_description' => 'A healthy breakfast 200',
+        //         'calories' => '200',
+        //         'image_url' => 'http://example.com/breakfast.png',
+        //     ],
+        //     [
+        //         'meal_name' => 'Lunch',
+        //         'meal_description' => 'A healthy lunch 300',
+        //         'calories' => '300',
+        //         'image_url' => 'http://example.com/lunch.png',
+
+        //     ],
+        // ];
+        // foreach ($mealsData as $key => $value) {
+        //     $meal = new meal();
+        //     $meal->meal_name = $value['meal_name'];
+        //     $meal->calories = $value['calories'];
+        //     $meal->image_url = $value['image_url'];
+        //     $meal->save();
+        //     $patient->patient_meal_recommendation()->create([
+        //         'meal_id' => $meal->id,
+        //         'meal_description' => $value['meal_description'],
+        //     ]);
+        // }
+        // $exercisesData = [
+        //     [
+        //         'exercise_name' => 'Push-ups',
+        //         'exercise_description' => 'try to do 10 push-ups',
+        //         'image_url' => 'http://example.com/pushups.png',
+        //     ],
+        //     [
+        //         'exercise_name' => 'Squats',
+        //         'exercise_description' => 'try to do 10 squats',
+        //         'image_url' => 'http://example.com/squats.png',
+        //     ]
+        // ];
+        // foreach ($exercisesData as $key => $value) {
+        //     $exercise = new exercise();
+        //     $exercise->exercise_name = $value['exercise_name'];
+        //     $exercise->image_url = $value['image_url'];
+        //     $exercise->save();
+        //     $patient->patient_exercise_recommendation()->create([
+        //         'exercise_id' => $exercise->id,
+        //         'exercise_description' => $value['exercise_description'],
+        //     ]);
+        // }
 
 
 
@@ -389,12 +602,15 @@ class DoctorController extends Controller
         $blogs = blog::with('author')->with('favorites')->get();
         //now if blog is favorited
     //    dd($blogs);
+    if($blogs->count() == 0){
+        return response()->json(false, 200);
+    }
         $result = $blogs->map(function ($blog) {
             return [
                 'id' => $blog->blog_id,
                 'title' => $blog->title,
                 'Author_name' => $blog->author->name,
-                'imageUrl' => $blog->image_url,
+                'image_url' =>'uploads/blogs/'.$blog->image_url,
                 'description' => $blog->content,
                 // 'USER' => $blog->author->role,
                 'created_at' => $blog->created_at,
@@ -412,41 +628,44 @@ class DoctorController extends Controller
     }
     public function add_blog(Request $request)
     {
-        // dd($request->all());
-        $doctor_id = $request->doctor_id;
-
-        $author_id = doctor::where('id', $doctor_id)->first();
-        //create slug from title
-        $slug = Str::slug($request->title); 
-        //do validation
-        $validator = Validator::make($request->all(), [
+        try{
+             $author_id = Auth::user();
+          $validator = Validator::make($request->all(), [
             'title' => 'required|unique:blogs',
-            'content' => 'required',
+            'description' => 'required',
             'image_url' => 'image|mimes:jpeg,png,jpg,gif|max:3048',
-            'doctor_id' => 'required',
-            'slug' => 'unique:blogs',
+            'is_public' => 'required',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
         //check if there is failure in the $request->validate
-       
-
         // dd($author_id->user_id);
+        if ($request->hasFile('image_url')) {
         $image = $request->file('image_url');
         $fileExtension = $request->file('image_url')->extension();
         $file_name = Carbon::now()->timestamp . '.' . $fileExtension;
         $this->GenerateBlogThumbnailsImage($image, $file_name);
-
         $blog = new blog();
         $blog->title = $request->title;
-        $blog->slug = $slug;
-        $blog->content = $request->content;
+        $blog->content = $request->description;
         $blog->image_url = $file_name;
-        $blog->author_id = $author_id->user_id;
+        $blog->author_id = $author_id->id;
+        $blog->is_educational = $request->is_public;
         $blog->save();
         return response()->json('Blog created successfully', 200);
+        }
+         $blog = new blog();
+        $blog->title = $request->title;
+        $blog->content = $request->content;
+        $blog->author_id = $author_id->user_id;
+        $blog->is_educational = $request->is_educational;
+        $blog->save();
+        return response()->json('Blog created successfully', 200);
+        }catch(\Exception $e){
+            return response()->json($e->getMessage(), 400);
+        }
     }
     public function GenerateBlogThumbnailsImage($image, $imageName)
     {
@@ -455,7 +674,7 @@ class DoctorController extends Controller
         $img->resize(300, 300);
         $img->save($destination . '/' . $imageName);
     }
-    /*******  5179da6d-80de-41fd-bda6-07fdf44de650  *******/
+    /*******5179da6d-80de-41fd-bda6-07fdf44de650  *******/
     public function show_blog(Request $request)
     {
         $blog_id = $request->blog_id;

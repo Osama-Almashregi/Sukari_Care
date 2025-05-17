@@ -10,17 +10,24 @@ class patient extends Model
     use Notifiable;
     
     protected $table = 'patients';
+    protected $primaryKey = 'id';
     protected $fillable=[
         'user_id',
-        'doctor_id'
+        'doctor_id',
+        'type_of_sugar'
 ];
     public function user(){
     return $this->belongsTo(User::class);
     }
 
-    public function doctor(){
-    return $this->belongsTo(doctor::class);
-    }
+    // public function doctor(){
+    // return $this->belongsTo(doctor::class,'doctor_id');
+    // }
+
+public function doctor()
+{
+    return $this->belongsTo(doctor::class, 'doctor_id');
+}
     public function medical_history(){
         return $this->hasMany(medical_history::class);
     }

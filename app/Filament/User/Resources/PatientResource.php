@@ -4,7 +4,9 @@ namespace App\Filament\User\Resources;
 
 use App\Filament\User\Resources\PatientResource\Pages;
 use App\Filament\User\Resources\PatientResource\RelationManagers;
+use App\Models\doctor;
 use App\Models\Patient;
+use App\Models\symptom;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -20,6 +22,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Guava\FilamentModalRelationManagers\Actions\Table\RelationManagerAction;
+use Illuminate\Support\Facades\Auth;
 
 class PatientResource extends Resource
 {
@@ -37,17 +40,37 @@ class PatientResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('user.name')->label('اسم المستخدم')->required(),
+                TextInput::make('id')->hidden(),
+                TextInput::make('user.name')->label('اسم المستخدم'),
                 // Select::make('glucose_reading.id')->,
-                TextInput::make('user.email')->label('البريد الإلكتروني')->required(),
-                TextInput::make('user.phone')->label('رقم الهاتف')->required(),
-                TextInput::make('user.password')->label('كلمة المرور')->required(),
-                TextInput::make('user.profile.first_name')->label('الاسم الأول')->required(),
-                TextInput::make('user.profile.last_name')->label('الاسم الأخير')->required(),
-                DateTimePicker::make('user.profile.date_of_birth')->label('تاريخ الميلاد')->required(),
-                TextInput::make('user.profile.contact_info')->label('معلومات التواصل')->required(),
-                // Hidden::make('user.profile.user_id')->label('user_id')->required(),
-            ]);
+                TextInput::make('user.email')->label('البريد الإلكتروني'),
+                TextInput::make('user.phone')->label('رقم الهاتف'),
+                TextInput::make('user.password')->label('كلمة المرور'),
+                // TextInput::make('user.profile.first_name')->label('الاسم الأول'),
+                // TextInput::make('user.profile.last_name')->label('الاسم الأخير'),
+                // DateTimePicker::make('user.profile.date_of_birth')->label('تاريخ الميلاد'),
+                // TextInput::make('user.profile.contact_info')->label('معلومات التواصل')->nullable(),
+                // FileUpload::make('user.profile.image_url')->label('صورة الملف الشخصي'),
+                TextInput::make('symptoms.symptom_description')->label('وصف المرض')->nullable(),
+                Select::make('symptoms.severity')->label('خطورة المرض')->options([
+                    'mild' => 'ضعيفة',
+                    'moderate' => 'متوسطة',
+                    'severe' => 'خطيرة',
+                ]),
+                // TextInput::make('medical_history.notes')->label(' ملاحظات')->nullable(),
+                // Select::make('medical_history.status')->options([
+                //     'active' => 'نشط',
+                //     'resolved' => 'محلول',
+                // ]),
+                // TextInput::make('physical_examination.blood_pressure')->label('ضغط الدم')->nullable(),
+                // TextInput::make('physical_examination.weight')->label('وزن')->nullable(),
+                // TextInput::make('physical_examination.height')->label('طول')->nullable(),
+                // TextInput::make('physical_examination.heart_rate')->label('معدل نبضا القلب')->nullable(),
+                // TextInput::make('physical_examination.bmi')->label('BMI')->nullable(),
+                // TextInput::make('physical_examination.skin_examination_notes')->label('ملاحظات الجلد')->nullable(),
+                // TextInput::make('physical_examination.foot_examination_notes')->label('ملاحظات القدم')->nullable(),
+   
+                ]);
     }
 
     public static function table(Table $table): Table
@@ -64,9 +87,13 @@ class PatientResource extends Resource
             ])
             ->filters([
                 //
-            ])
+            ])->modifyQueryUsing(function (Builder $query) {
+              $doctor = doctor::where('user_id', Auth::user()->id)->first();
+              return $query->where('doctor_id', $doctor->id);
+            })
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
                 RelationManagerAction::make('lesson-relation-manager')
                     ->label('عرض القراءات')->color('success')
                     ->relationManager(RelationManagers\GlucoseReadingRelationManager::make()),
