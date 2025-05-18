@@ -32,39 +32,35 @@ class CreatePatient extends CreateRecord
 
 
 
-        // // إنشاء ملف تعريف المستخدم
-        // $user_profile = new user_profile();
-        // $user_profile->first_name = $data['user']['profile']['first_name'];
-        // $user_profile->last_name = $data['user']['profile']['last_name'];
-        // $user_profile->date_of_birth = $data['user']['profile']['date_of_birth'];
-        // $user_profile->contact_info = $data['user']['profile']['contact_info'];
-        // $user_profile->user_id = $user->id;
-        // $user_profile->save();
-
         // الحصول على معرف الطبيب من المستخدم المصادق عليه
         $doctor_id = doctor::where('user_id', Auth::user()->id)->first()->id;
         
-        $current_patient = patient::where('user_id', $user->id)->first();
         
 
         // // إضافة user_id و doctor_id إلى مصفوفة البيانات للمريض
         $data['user_id'] = $user->id;
         $data['doctor_id'] = $doctor_id;
-        $data['patient_id'] = $current_patient->id;
 
         //generate patient_id
-        $patient =patient::where('user_id', $user->id)->first();
-
-        $symptoms =new symptom();
-        $symptoms->symptom_description = $data['symptoms']['symptom_description'];
-        $symptoms->severity = $data['symptoms']['severity'];
-        $symptoms->save();
 
 
         // $data['symptoms'] = implode(',', $symptoms);
         return $data; // يمكنك إرجاع البيانات أو توجيه المستخدم إلى صفحة أخرى
     }
-    
+protected function afterCreate(): void
+{
+    // تحقق من وجود الأعراض في البيانات المدخلة
+    $symptomsData = $this->record->symptoms; // تأكد من أن لديك الأعراض هنا
 
-
+    // تحقق من وجود أعراض
+    if (!empty($symptomsData)) {
+        foreach ($symptomsData as $symptom) {
+            $this->record->symptoms()->create([
+                'patient_id' => $this->record->id,
+                'symptom_description' => $symptom['symptom_description'], // تأكد من استخدام المصفوفة
+                'severity' => $symptom['severity'], // تأكد من استخدام المصفوفة
+            ]);
+        }
+    }
+}
 }

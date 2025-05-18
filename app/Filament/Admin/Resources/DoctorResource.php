@@ -4,11 +4,13 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\DoctorResource\Pages;
 use App\Filament\Admin\Resources\DoctorResource\RelationManagers;
+use App\Filament\Admin\Resources\DoctorResource\RelationManagers\PaitentRelationManager;
 use App\Models\Doctor;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -107,8 +109,22 @@ class DoctorResource extends Resource
             TextColumn::make('user.email')->label('البريد الإلكتروني')->searchable()->sortable()->toggleable(),
             TextColumn::make('user.phone')->label('رقم الهاتف')->searchable()->sortable()->toggleable(),
             TextColumn::make('specialization')->label('التخصص')->toggleable(),
+            TextColumn::make('status')
+                    ->label('الحالة')
+                    ->formatStateUsing(function ($state) {
+                        return $state === 'active'
+                            ? '<span class="text-success">مفعل</span>'
+                            : '<span class="text-danger">محظور</span>';
+                    })
+                    ->html() // Enable HTML rendering
+                    ->toggleable()
+                    ->sortable(),
         ])
             ->filters([
+                SelectFilter::make('status')->options([
+                    'active' => 'نشط',
+                    'paused' => 'معطل',
+                ]),
                 Filter::make('created_at')->form([
                     Forms\Components\DatePicker::make('created_from')->label('من'),
                     Forms\Components\DatePicker::make('created_until')->label('الى'),
@@ -126,6 +142,15 @@ class DoctorResource extends Resource
                 
             ])
             ->actions([
+                  Tables\Actions\Action::make('toggleStatus')
+                    ->label(fn($record) => $record->status === 'active' ? 'حظر ' : 'تفعيل ')
+                    ->action(function ($record) {
+                        $record->status = $record->status === 'active' ? 'paused' : 'active';
+                        $record->save();
+                    })
+                    ->requiresConfirmation()->icon(fn($record) => $record->status === 'active' ? 'heroicon-o-lock-closed' : 'heroicon-o-lock-open')
+                    ->color(fn($record) => $record->status === 'active' ? 'danger' : 'success'),
+   
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -139,7 +164,7 @@ class DoctorResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            PaitentRelationManager::class
         ];
     }
 

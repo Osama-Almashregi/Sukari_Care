@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Doctor;
 use App\Models\exercise_recommendation;
 use App\Models\Favorite;
 use App\Models\meal_recommendation;
+use App\Models\meal_system;
+use App\Models\used_drugs;
 use App\Notifications\DoctorNewRecommandationNotfication;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Auth;
@@ -93,6 +95,7 @@ class DoctorController extends Controller
     $patient->medical_history()->create([
         'notes' => $request->medical_diagnosis,
     ]);
+    $patient_id = $patient->id;
 
         $patient->symptoms()->create([
             'symptom_description' => $request->symptom_description,
@@ -101,21 +104,21 @@ class DoctorController extends Controller
         ]);
 
     
-        if($request->hasFile('foot_exam_file_name')){
-            $file_foot = $request->file('foot_exam_file_name');
-            $fileExtension_foot = $request->file('foot_exam_file_name')->extension();
-            $file_name_foot = Carbon::now()->timestamp . '.' . $fileExtension_foot;
-            $file_foot->move(public_path('uploads/patients/foot_examination'), $file_name_foot);
-             $patient->physical_examination()->create([
-            'blood_pressure' => $request->blood_pressure,
-            'heart_rate' => $request->heart_rate,
-            'weight' => $request->weight,
-            'height' => $request->height,
-            'bmi' => $request->bmi,
-            'foot_examination_notes' => $file_foot
-            ]);
-        }
-        else{
+        // if($request->hasFile('foot_exam_file_name')){
+        //     $file_foot = $request->file('foot_exam_file_name');
+        //     $fileExtension_foot = $request->file('foot_exam_file_name')->extension();
+        //     $file_name_foot = Carbon::now()->timestamp . '.' . $fileExtension_foot;
+        //     $file_foot->move(public_path('uploads/patients/foot_examination'), $file_name_foot);
+        //     $patient->physical_examination()->create([
+        //     'blood_pressure' => $request->blood_pressure,
+        //     'heart_rate' => $request->heart_rate,
+        //     'weight' => $request->weight,
+        //     'height' => $request->height,
+        //     'bmi' => $request->bmi,
+        //     'foot_examination_notes' => $file_name_foot
+        //     ]);
+        // }
+        // else{
             $patient->physical_examination()->create([
             'blood_pressure' => $request->blood_pressure,
             'heart_rate' => $request->heart_rate,
@@ -124,26 +127,81 @@ class DoctorController extends Controller
             'bmi' => $request->bmi,
             'foot_examination_notes' => $request->foot_exam_file_name
             ]);
-        }
+        // }
         
-        // $patient->blood_tests()->create([
-        //     'patient_id' => $patient_id,
-        //     'result' => $request->result,
-        //     'test_type' => $request->test_type,
-        //     'attachment' => $request->attachment,
-        // ]);
-        // $patient->life_style()->create([
-        //     'physical_activity_level' => $request->physical_activity_level,
+        $patient->blood_tests()->create([
+            'result' => $request->examination_result,
+            // 'test_type' => $request->,
+            'attachment' => $request->examination_attached,
+        ]);
+        $patient->life_style()->create([
+            'physical_activity_level' => $request->physical_activity_level,
 
-        //     // ------------------------------------------------------------
-        //     'medications' => json_encode(['sihsoi', 'shoid']),
-        //     // ------------------------------------------------------------
-        // ]);
-        // $patient->patient_goles()->create([
-        //     'goal_status' => $request->goal_status,
-        //     'target_date' => $request->target_date,
-        //     'goal_description' => $request->goal_description
-        // ]);
+            // ------------------------------------------------------------
+            // 'medications' => json_encode(['sihsoi', 'shoid']),
+            // ------------------------------------------------------------
+        ]);
+
+       foreach ($request->medical_usedList as $medication) {
+          $drug = new used_drugs();
+          $drug->patient_id = $patient_id;
+          $drug->drug_name = $medication['drug_name'];
+        $drug->save();
+        }
+        $patient->patient_goles()->create([
+            'goal_status' => $request->goal_status,
+            'target_date' => $request->goal_end_date,
+            'goal_description' => $request->goal_details
+        ]);
+        
+         foreach ($request->drug_list as $drug) {
+          $drugs = new drug();
+          $drugs->drog_name = $drug['treatmentName'];
+          $drugs->drug_type = $drug['drugType'];
+          $drugs->save();
+          // drug_id
+          $drug_id = $drugs->id;
+          $drug = new drug_recommendation();
+          $drug->patient_id = $patient_id;
+          $drug->drug_id = $drug_id;
+          $drug->when_to_take = $drug['mealTime'];
+          $drug->time_to_take = $drug['dayTime'];
+          $drug->number_of_takes = $drug['frequency'];     
+            $drug->save();
+         }
+         foreach ($request->exerciseList as $exercise) {
+            $exercises = new exercise();
+            $exercises->exercise_name = $exercise['name'];
+            $exercises->save();
+            // exercise_id
+            $exercise_id = $exercises->id;
+          $exercise = new exercise_recommendation();
+          $exercise->patient_id = $patient_id;
+          $exercise->exercise_id = $exercise_id;
+          $exercise->exercise_description = $exercise['desc'];
+        $exercise->save();
+         }
+
+        // foreach ($request->diet  as $mealData) {
+        //     $meals = new meal();
+        //     $meals->meal_name = $mealData['meal_name'];
+        //     $meals->meal_description = $mealData['meal_setup'];
+        //     $meals->save();
+        //     $meal_id = $meals->id;
+        //     $meal_recommendation = new meal_recommendation();
+        //     $meal_recommendation->patient_id = $patient_id;
+        //     $meal_recommendation->meal_id = $meal_id;
+        //     $meal_recommendation->meal_name = $mealData['meal_name'];
+        //     $meal_recommendation->meal_time = $mealData['meal_time'];
+        //     $meal_recommendation->meal_setup = $mealData['meal_setup'];
+        //     if (isset($mealData['image_url'])) {
+        //         // إذا كانت الصورة موجودة، يمكنك استخدام URL مباشرة أو معالجة الصورة
+        //         // هنا سأفترض أن الصورة تم تحميلها مسبقًا
+        //         $meal_recommendation->image_url = $mealData['image_url'];
+        //     }
+
+        //     $meal_recommendation->save();
+        // }
         // //   array of drugs recommendation
         // $drugsData = [
         //     [

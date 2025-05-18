@@ -6,6 +6,7 @@ use App\Filament\User\Resources\BlogResource\Pages;
 use App\Filament\User\Resources\BlogResource\RelationManagers;
 use App\Models\Blog;
 use App\Models\doctor;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -34,20 +35,23 @@ class BlogResource extends Resource
     {
         return $table
             ->columns([
-                
+                TextColumn::make('id')->label('الرقم')->sortable()->toggleable(),
+                TextColumn::make('author_id')->label('الطبيب')->sortable()->toggleable(),
                 TextColumn::make('title')->label('العنوان')->searchable()->sortable()->toggleable(),
                 TextColumn::make('content')->label('الوصف')->searchable()->sortable()->toggleable(),
                 TextColumn::make('author.name')->label('اسم الطبيب')->searchable()->sortable()->toggleable(),
-            ])->modifyQueryUsing(function (Builder $query) {
-              $doctor = doctor::where('user_id', Auth::user()->id)->first();
-              $blog = blog::where('author_id', $doctor->id)->first();
-              return $query->where('author_id', $doctor->id);
-            })
+                
+            ])
+            // ->modifyQueryUsing(function (Builder $query) {
+            //   $doctor = User::where('id', Auth::user()->id)->first();
+            // //   $blog = blog::where('author_id', $doctor->id)->first();
+            //   return $query->where('author_id', $doctor->id);
+            // })
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+               
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

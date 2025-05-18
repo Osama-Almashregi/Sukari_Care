@@ -61,6 +61,9 @@ public function doctor()
     public function relative(){
         return $this->hasMany(relative::class);
     }
+    public function used_drugs(){
+        return $this->hasMany(used_drugs::class);
+    }
  
     
 }

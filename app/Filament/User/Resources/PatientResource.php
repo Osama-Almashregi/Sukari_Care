@@ -70,17 +70,14 @@ class PatientResource extends Resource
                 // TextInput::make('physical_examination.skin_examination_notes')->label('ملاحظات الجلد')->nullable(),
                 // TextInput::make('physical_examination.foot_examination_notes')->label('ملاحظات القدم')->nullable(),
    
-                ]);
-    }
-
+            ]);
+            }
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
             TextColumn::make('user.name') // Create a new column for the full name
-                ->label('الاسم الكامل') // Label for the new column
-                ->formatStateUsing(fn ($record) => "{$record->user->profile->first_name} {$record->user->profile->last_name}") // Concatenate first and last name
-                ->sortable()->toggleable(),
+                ->label('الاسم الكامل'),
             TextColumn::make('user.email')->label('البريد الإلكتروني')->searchable()->sortable()->toggleable(),
             TextColumn::make('user.phone')->label('رقم الهاتف')->sortable()->toggleable(),
              // Make it sortable if needed                

@@ -16,4 +16,5 @@ class EditDoctor extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+ 
 }

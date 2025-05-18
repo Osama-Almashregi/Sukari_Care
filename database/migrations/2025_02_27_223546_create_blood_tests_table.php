@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('id');
             $table->unsignedBigInteger('patient_id');
             $table->string('attachment')->nullable();
-            $table->enum('test_type', ['fasting_glucose', 'hba1c', 'lipid_profile', 'kidney_function']);
             $table->decimal('result', 10, 2)->nullable();
             // $table->date('test_date')->nullable();
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');

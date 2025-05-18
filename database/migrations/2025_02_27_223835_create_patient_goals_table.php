@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('id');
             $table->unsignedBigInteger('patient_id');
             $table->text('goal_description')->nullable();
-            $table->enum('goal_status', ['pending', 'achieved', 'not achieved'])->default('pending');
+            $table->string('goal_status')->nullable();
             $table->date('target_date')->nullable();
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
             $table->timestamps();

@@ -7,11 +7,15 @@ class lifestyle_assessment extends Model
 {
     protected $table = 'lifestyle_assessment';
     protected $fillable = [
-        'medications',
         'physical_activity_level',
-        'dietary_habits',
+        'drug_id',
     ];
     protected $primaryKey = 'id';
+
+    public function patient(){
+        return $this->belongsTo(patient::class);
+    }
+  
 
 
 }

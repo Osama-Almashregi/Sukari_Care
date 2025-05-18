@@ -10,6 +10,7 @@ class symptom extends Model
     protected $primaryKey = 'id';
     protected $foreignkey = 'patient_id';
     protected $fillable=[
+        'patient_id',
         'severity',
         'symptom_description',
         ];

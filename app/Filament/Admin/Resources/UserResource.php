@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Filament\Admin\Resources\UserResource\RelationManagers;
+use App\Filament\Admin\Resources\UserResource\Widgets\User_advanced_widget;
 use App\Models\User;
 use App\Traits\HasActivation;
 use App\Traits\HasActiveIcon;
@@ -27,6 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Vonage\Verify\Check;
+use App\Filament\Admin\Resources\UserResource\Widgets\UserAdvancedWidget;
 
 class UserResource extends Resource
 {
@@ -46,7 +48,7 @@ class UserResource extends Resource
 
 
 
-
+ 
 
 
 
@@ -204,6 +206,13 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+        ];
+    }
+     public static function getWidgets(): array
+    {
+        return [
+            User_advanced_widget::class,
+            // Add other widgets here if needed
         ];
     }
 }
